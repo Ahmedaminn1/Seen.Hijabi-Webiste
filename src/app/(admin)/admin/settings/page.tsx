@@ -30,7 +30,16 @@ export default async function AdminSettingsPage() {
 
       <SettingsForm
         initialStore={storeSettings}
-        initialShipping={shippingSettings}
+        initialShipping={{
+          id: shippingSettings.id,
+          freeShippingEnabled: shippingSettings.freeShippingEnabled,
+          freeShippingMinAmount:
+            shippingSettings.freeShippingMinAmount !== null
+              ? Number(shippingSettings.freeShippingMinAmount)
+              : null,
+          freeShippingMinQty: shippingSettings.freeShippingMinQty,
+          fixedShippingCost: Number(shippingSettings.fixedShippingCost),
+        }}
       />
     </div>
   );

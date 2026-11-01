@@ -35,3 +35,4 @@ export function SortSelect({ defaultValue = "newest" }: SortSelectProps) {
     </select>
   );
 }
+

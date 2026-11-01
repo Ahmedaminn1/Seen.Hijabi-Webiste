@@ -21,10 +21,11 @@ interface SettingsFormProps {
     announcementEnabled: boolean;
   };
   initialShipping: {
+    id?: string;
     freeShippingEnabled: boolean;
-    freeShippingMinAmount: any;
+    freeShippingMinAmount: number | null;
     freeShippingMinQty: number | null;
-    fixedShippingCost: any;
+    fixedShippingCost: number;
   };
 }
 

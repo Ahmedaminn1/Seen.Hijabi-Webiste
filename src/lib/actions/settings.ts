@@ -50,7 +50,17 @@ export async function getShippingSettings() {
         data: { id: "default" },
       });
     }
-    return settings;
+    return {
+      id: settings.id,
+      freeShippingEnabled: settings.freeShippingEnabled,
+      freeShippingMinAmount:
+        settings.freeShippingMinAmount !== null
+          ? Number(settings.freeShippingMinAmount)
+          : null,
+      freeShippingMinQty: settings.freeShippingMinQty,
+      fixedShippingCost: Number(settings.fixedShippingCost),
+      updatedAt: settings.updatedAt,
+    };
   } catch (error) {
     console.error("Error fetching shipping settings:", error);
     return null;

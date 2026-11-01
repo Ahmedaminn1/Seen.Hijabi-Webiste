@@ -96,3 +96,4 @@ export async function uploadProductImage(formData: FormData): Promise<UploadResu
     };
   }
 }
+
