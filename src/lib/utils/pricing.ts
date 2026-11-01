@@ -109,14 +109,14 @@ export function getFreeShippingProgress(
 }
 
 /**
- * Format a number as Egyptian Pounds.
+ * Format a number as Egyptian Pounds (deterministic output between server and client).
  */
 export function formatPrice(amount: number): string {
-  return new Intl.NumberFormat("ar-EG", {
-    style: "currency",
-    currency: "EGP",
+  const rounded = Math.round(amount * 100) / 100;
+  const formatted = new Intl.NumberFormat("en-US", {
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
-  }).format(amount);
+  }).format(rounded);
+  return `${formatted} ج.م`;
 }
 

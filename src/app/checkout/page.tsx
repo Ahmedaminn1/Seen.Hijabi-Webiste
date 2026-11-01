@@ -61,6 +61,11 @@ export default function CheckoutPage() {
   const [isPending, startTransition] = useTransition();
   const [serverError, setServerError] = useState<string | null>(null);
   const [utmSource, setUtmSource] = useState<string>("");
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Read UTM source that UtmTracker stored in sessionStorage
   useEffect(() => {
@@ -72,12 +77,12 @@ export default function CheckoutPage() {
     }
   }, []);
 
-  // Redirect to products if cart is empty
+  // Redirect to products if cart is empty after hydration
   useEffect(() => {
-    if (items.length === 0) {
+    if (mounted && items.length === 0) {
       router.replace("/products");
     }
-  }, [items.length, router]);
+  }, [mounted, items.length, router]);
 
   const {
     register,
@@ -121,7 +126,7 @@ export default function CheckoutPage() {
     });
   };
 
-  if (items.length === 0) {
+  if (!mounted || items.length === 0) {
     return (
       <div className="min-h-screen bg-[oklch(0.97_0.01_80)] flex items-center justify-center">
         <p className="text-[oklch(0.45_0_0)]">جاري التحميل...</p>

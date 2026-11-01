@@ -45,23 +45,19 @@ export function CartDrawer({
     setMounted(true);
   }, []);
 
-  if (!mounted) {
-    return (
-      <button className="relative p-2 text-[var(--foreground)] hover:opacity-80 transition-opacity">
-        <ShoppingBag className="w-5 h-5" />
-      </button>
-    );
-  }
+  const safeSubtotal = mounted ? subtotal : 0;
+  const safeTotalItems = mounted ? totalItems : 0;
+  const safeItems = mounted ? items : [];
 
   // Shipping progress calculation
-  const shippingProgress = getFreeShippingProgress(subtotal, totalItems, shippingSettings);
-  const shippingCalculation = calculateShippingFee(subtotal, totalItems, shippingSettings);
-  const finalTotal = subtotal + shippingCalculation.fee;
+  const shippingProgress = getFreeShippingProgress(safeSubtotal, safeTotalItems, shippingSettings);
+  const shippingCalculation = calculateShippingFee(safeSubtotal, safeTotalItems, shippingSettings);
+  const finalTotal = safeSubtotal + shippingCalculation.fee;
 
   const progressPercent = shippingSettings.freeShippingMinAmount
-    ? Math.min(100, (subtotal / shippingSettings.freeShippingMinAmount) * 100)
+    ? Math.min(100, (safeSubtotal / shippingSettings.freeShippingMinAmount) * 100)
     : shippingSettings.freeShippingMinQty
-    ? Math.min(100, (totalItems / shippingSettings.freeShippingMinQty) * 100)
+    ? Math.min(100, (safeTotalItems / shippingSettings.freeShippingMinQty) * 100)
     : 0;
 
   return (
@@ -71,9 +67,9 @@ export function CartDrawer({
         aria-label="حقيبة التسوق | Shopping Bag"
       >
         <ShoppingBag className="w-5 h-5" />
-        {totalItems > 0 && (
+        {mounted && safeTotalItems > 0 && (
           <span className="absolute top-1 right-1 bg-[var(--primary)] text-[var(--primary-foreground)] text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-medium font-mono">
-            {totalItems}
+            {safeTotalItems}
           </span>
         )}
       </SheetTrigger>
@@ -83,7 +79,7 @@ export function CartDrawer({
           <SheetTitle className="text-sm font-serif tracking-tight text-[var(--foreground)] flex justify-between items-center">
             <span>حقيبة التسوق | Shopping Bag</span>
             <span className="text-xs font-sans text-[var(--muted-foreground)]">
-              ({totalItems} {totalItems === 1 ? "قطعة" : "قطع"})
+              ({safeTotalItems} {safeTotalItems === 1 ? "قطعة" : "قطع"})
             </span>
           </SheetTitle>
         </SheetHeader>
@@ -119,7 +115,7 @@ export function CartDrawer({
 
         {/* Items List */}
         <div className="flex-1 overflow-y-auto p-4 divide-y divide-[var(--border)]">
-          {items.length === 0 ? (
+          {safeItems.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-center p-6 text-[var(--muted-foreground)] space-y-3">
               <ShoppingBag className="w-10 h-10 opacity-30 stroke-[1.5]" />
               <p className="text-sm font-medium">حقيبة التسوق فارغة</p>
@@ -134,7 +130,7 @@ export function CartDrawer({
               </Button>
             </div>
           ) : (
-            items.map((item) => (
+            safeItems.map((item) => (
               <div key={item.variantId} className="py-3 flex gap-3 items-center">
                 <div className="w-16 h-20 relative bg-[var(--muted)] border border-[var(--border)] rounded-sm overflow-hidden shrink-0">
                   <Image
@@ -213,12 +209,12 @@ export function CartDrawer({
         </div>
 
         {/* Footer Summary & Checkout */}
-        {items.length > 0 && (
+        {safeItems.length > 0 && (
           <div className="p-4 border-t border-[var(--border)] bg-[var(--card)] space-y-3">
             <div className="space-y-1.5 text-xs">
               <div className="flex justify-between text-[var(--muted-foreground)]">
                 <span>المجموع الفرعي:</span>
-                <span className="font-mono">{formatPrice(subtotal)}</span>
+                <span className="font-mono">{formatPrice(safeSubtotal)}</span>
               </div>
               <div className="flex justify-between text-[var(--muted-foreground)]">
                 <span>الشحن التقديري:</span>
