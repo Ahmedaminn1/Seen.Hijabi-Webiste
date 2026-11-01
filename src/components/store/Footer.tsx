@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { InstagramIcon } from "@/components/ui/InstagramIcon";
 import { Phone, ShieldCheck, Truck, RefreshCw } from "lucide-react";
 
@@ -58,9 +59,20 @@ export function Footer({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12 grid grid-cols-1 md:grid-cols-4 gap-8 text-xs">
         {/* Brand info */}
         <div className="space-y-3 md:col-span-1">
-          <h3 className="text-lg font-serif tracking-tight text-[var(--foreground)]">
-            {storeName}
-          </h3>
+          <div className="flex items-center gap-2.5">
+            <div className="relative w-8 h-8 rounded-full overflow-hidden bg-white border border-[var(--border)] shrink-0">
+              <Image
+                src="/images/logo.png"
+                alt={storeName}
+                fill
+                className="object-contain p-0.5"
+                sizes="32px"
+              />
+            </div>
+            <h3 className="text-lg font-serif tracking-tight text-[var(--foreground)]">
+              {storeName}
+            </h3>
+          </div>
           <p className="text-[11px] text-[var(--muted-foreground)] leading-relaxed">
             علامة أزياء مصرية متخصصة في تقديم أرقى الفساتين، العبايات، والحجابات العصرية بطابع أنثوي محتشم وراقي.
           </p>

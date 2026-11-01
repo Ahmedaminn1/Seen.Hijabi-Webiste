@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { CartDrawer } from "@/components/store/CartDrawer";
 import { InstagramIcon } from "@/components/ui/InstagramIcon";
 import { Search, Menu, X } from "lucide-react";
@@ -90,13 +91,25 @@ export function Navbar({
 
         {/* Brand Logo (Centered on mobile, styled with Playfair Display) */}
         <div className="text-center">
-          <Link href="/" className="inline-block">
-            <span className="text-xl sm:text-2xl font-serif tracking-tight text-[var(--foreground)] block">
-              {storeName}
-            </span>
-            <span className="text-[9px] tracking-widest text-[var(--muted-foreground)] uppercase block font-sans">
-              Fashion &bull; Hijab
-            </span>
+          <Link href="/" className="inline-flex items-center gap-2.5 group">
+            <div className="relative w-9 h-9 sm:w-10 sm:h-10 rounded-full overflow-hidden bg-white border border-[var(--border)] shrink-0 shadow-xs">
+              <Image
+                src="/images/logo.png"
+                alt={storeName}
+                fill
+                className="object-contain p-1"
+                sizes="40px"
+                priority
+              />
+            </div>
+            <div className="text-right">
+              <span className="text-lg sm:text-xl font-serif tracking-tight text-[var(--foreground)] block leading-tight group-hover:text-[var(--brand-gold)] transition-colors">
+                {storeName}
+              </span>
+              <span className="text-[8px] sm:text-[9px] tracking-widest text-[var(--muted-foreground)] uppercase block font-sans">
+                Fashion &bull; Hijab
+              </span>
+            </div>
           </Link>
         </div>
 

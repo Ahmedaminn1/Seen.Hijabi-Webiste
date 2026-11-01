@@ -37,15 +37,17 @@ export function HeroSection() {
           </div>
 
           {/* Right Hero Image */}
-          <div className="relative aspect-[4/5] sm:aspect-[3/4] w-full max-w-md mx-auto md:max-w-none rounded-sm overflow-hidden border border-[var(--border)] bg-stone-200">
-            <Image
-              src="https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=1200&q=80"
-              alt="Seen Hijabi fashion editorial"
-              fill
-              priority
-              className="object-cover"
-              sizes="(max-width: 768px) 100vw, 50vw"
-            />
+          <div className="relative aspect-[4/5] sm:aspect-[3/4] w-full max-w-md mx-auto md:max-w-none rounded-sm overflow-hidden border border-[var(--border)] bg-white flex items-center justify-center p-8">
+            <div className="relative w-full h-full">
+              <Image
+                src="/images/seen-brand.png"
+                alt="Seen Hijabi - متجر سين للحجاب والأزياء"
+                fill
+                priority
+                className="object-contain"
+                sizes="(max-width: 768px) 100vw, 50vw"
+              />
+            </div>
           </div>
         </div>
       </div>
