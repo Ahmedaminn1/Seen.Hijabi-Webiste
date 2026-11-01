@@ -340,3 +340,4 @@ export function OrdersTable({ initialOrders }: { initialOrders: OrderData[] }) {
     </div>
   );
 }
+

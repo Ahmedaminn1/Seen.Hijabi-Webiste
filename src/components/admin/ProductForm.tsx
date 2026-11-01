@@ -728,3 +728,4 @@ export function ProductForm({ categories }: ProductFormProps) {
     </form>
   );
 }
+

@@ -46,3 +46,4 @@ export default async function AdminInventoryPage() {
     </div>
   );
 }
+

@@ -201,3 +201,4 @@ export function InventoryTable({ initialVariants }: { initialVariants: VariantIt
     </div>
   );
 }
+
