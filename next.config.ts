@@ -1,8 +1,6 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  cacheComponents: true,
-  partialPrefetching: true,
   turbopack: {
     rules: {
       "*.css": {
@@ -14,21 +12,22 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       {
-        // Supabase Storage – replace YOUR_PROJECT_REF with your actual ref
         protocol: "https",
         hostname: "*.supabase.co",
         pathname: "/storage/v1/object/public/**",
+      },
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
       },
     ],
     formats: ["image/avif", "image/webp"],
   },
   experimental: {
-    // Enable server actions (required for form mutations)
     serverActions: {
-      bodySizeLimit: "10mb", // Allow product image uploads via server actions
+      bodySizeLimit: "10mb",
     },
   },
-  // Enforce strict mode in React
   reactStrictMode: true,
 };
 

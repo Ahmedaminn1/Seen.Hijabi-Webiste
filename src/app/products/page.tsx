@@ -305,3 +305,4 @@ export default async function ProductsCatalogPage({ searchParams }: ProductsPage
     </div>
   );
 }
+

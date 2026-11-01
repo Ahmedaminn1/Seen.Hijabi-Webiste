@@ -1,15 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { createProduct } from "@/lib/actions/products";
+import { uploadProductImage } from "@/lib/actions/upload";
 import { formatPrice } from "@/lib/utils/pricing";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Trash2, Upload, AlertCircle } from "lucide-react";
+import { Plus, Trash2, Upload, AlertCircle, Loader2 } from "lucide-react";
 
 interface CategoryOption {
   id: string;
@@ -41,6 +42,38 @@ export function ProductForm({ categories }: ProductFormProps) {
   // Images state
   const [images, setImages] = useState<Array<{ url: string; altText: string; isPrimary: boolean }>>([]);
   const [newImageUrl, setNewImageUrl] = useState("");
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingImage(true);
+    setErrorMessage(null);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await uploadProductImage(formData);
+      if (res.success && res.url) {
+        setImages((prev) => [
+          ...prev,
+          {
+            url: res.url!,
+            altText: `${name || "Product"} image`,
+            isPrimary: prev.length === 0,
+          },
+        ]);
+      } else {
+        setErrorMessage(res.error || "فشل رفع الصورة");
+      }
+    } catch {
+      setErrorMessage("حدث خطأ أثناء رفع الصورة");
+    } finally {
+      setIsUploadingImage(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
 
   // Colors state
   const [colors, setColors] = useState<Array<{ name: string; hexCode: string }>>([
@@ -414,26 +447,60 @@ export function ProductForm({ categories }: ProductFormProps) {
 
       {/* 3. Product Images */}
       <div className="bg-[var(--card)] border border-[var(--border)] p-6 space-y-4">
-        <h2 className="text-sm font-semibold text-[var(--foreground)] border-b border-[var(--border)] pb-3">
-          3. صور المنتج | Product Images
-        </h2>
+        <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
+          <h2 className="text-sm font-semibold text-[var(--foreground)]">
+            3. صور المنتج | Product Images
+          </h2>
+          <span className="text-xs text-[var(--muted-foreground)]">
+            ارفع الصور مباشرة أو أضف روابط خارجية
+          </span>
+        </div>
 
-        <div className="flex gap-2">
-          <Input
-            value={newImageUrl}
-            onChange={(e) => setNewImageUrl(e.target.value)}
-            placeholder="أدخل رابط الصورة (URL) أو ارفع من Supabase Storage"
-            className="text-xs h-9"
-          />
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          onChange={handleFileUpload}
+          className="hidden"
+        />
+
+        <div className="flex flex-col sm:flex-row gap-3">
           <Button
             type="button"
-            onClick={addImage}
-            variant="outline"
-            className="text-xs h-9 shrink-0 gap-1"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isUploadingImage}
+            className="bg-[var(--primary)] text-[var(--primary-foreground)] text-xs h-9 shrink-0 gap-2"
           >
-            <Plus className="w-3.5 h-3.5" />
-            <span>إضافة رابط | Add URL</span>
+            {isUploadingImage ? (
+              <>
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                <span>جاري الرفع...</span>
+              </>
+            ) : (
+              <>
+                <Upload className="w-3.5 h-3.5" />
+                <span>رفع صورة من الجهاز | Upload Image</span>
+              </>
+            )}
           </Button>
+
+          <div className="flex-1 flex gap-2">
+            <Input
+              value={newImageUrl}
+              onChange={(e) => setNewImageUrl(e.target.value)}
+              placeholder="أو أدخل رابط صورة مباشر (URL)..."
+              className="text-xs h-9"
+            />
+            <Button
+              type="button"
+              onClick={addImage}
+              variant="outline"
+              className="text-xs h-9 shrink-0 gap-1"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>إضافة رابط</span>
+            </Button>
+          </div>
         </div>
 
         {images.length > 0 ? (

@@ -125,3 +125,4 @@ export function ProductCard({
     </article>
   );
 }
+
