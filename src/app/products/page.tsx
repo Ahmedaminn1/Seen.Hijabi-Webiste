@@ -6,6 +6,7 @@ import { ProductCard } from "@/components/store/ProductCard";
 import { Footer } from "@/components/store/Footer";
 import { WhatsAppButton } from "@/components/store/WhatsAppButton";
 import { UtmTracker } from "@/components/store/UtmTracker";
+import { SortSelect } from "@/components/store/SortSelect";
 import { SlidersHorizontal, X } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -185,24 +186,7 @@ export default async function ProductsCatalogPage({ searchParams }: ProductsPage
               <span>الترتيب:</span>
             </span>
 
-            <form method="GET" action="/products" className="inline-block">
-              {categorySlug && <input type="hidden" name="category" value={categorySlug} />}
-              {searchQuery && <input type="hidden" name="q" value={searchQuery} />}
-              {onlySale && <input type="hidden" name="sale" value="true" />}
-
-              <select
-                name="sort"
-                defaultValue={sortBy}
-                // @ts-ignore
-                onChange={(e) => e.target.form?.submit()}
-                className="h-8 text-xs px-2.5 bg-[var(--background)] border border-[var(--border)] rounded-sm focus:outline-none focus:ring-1 focus:ring-[var(--brand-gold)]"
-              >
-                <option value="newest">الأحدث وصولاً | Newest</option>
-                <option value="best_selling">الأكثر مبيعاً | Best Selling</option>
-                <option value="price_asc">السعر: من الأقل للأعلى | Price Low to High</option>
-                <option value="price_desc">السعر: من الأعلى للأقل | Price High to Low</option>
-              </select>
-            </form>
+            <SortSelect defaultValue={sortBy} />
           </div>
         </div>
 
