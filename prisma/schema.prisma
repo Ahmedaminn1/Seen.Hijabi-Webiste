@@ -1,0 +1,14 @@
+// Seen Hijabi – Prisma Schema (Phase 1 skeleton)
+// Full schema will be completed in Phase 2.
+// Generator uses the new Prisma 7 client format.
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
