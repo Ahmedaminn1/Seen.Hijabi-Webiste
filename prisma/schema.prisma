@@ -1,14 +1,256 @@
-// Seen Hijabi – Prisma Schema (Phase 1 skeleton)
-// Full schema will be completed in Phase 2.
-// Generator uses the new Prisma 7 client format.
+// Seen Hijabi – Production E-Commerce Prisma Schema
+// Database: PostgreSQL on Supabase
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../src/generated/prisma"
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider = "postgresql"
+}
+
+// ─── Enums ───────────────────────────────────────────────────────────────────
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  UNPAID
+  PAID
+}
+
+// ─── Admin Users ─────────────────────────────────────────────────────────────
+
+model AdminUser {
+  id        String   @id // Corresponds to Supabase auth.users UUID
+  email     String   @unique
+  name      String?
+  role      String   @default("ADMIN")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("admin_users")
+}
+
+// ─── Categories ──────────────────────────────────────────────────────────────
+
+model Category {
+  id           String    @id @default(cuid())
+  name         String
+  slug         String    @unique
+  description  String?
+  imageUrl     String?
+  displayOrder Int       @default(0)
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  products     Product[]
+
+  @@index([displayOrder])
+  @@index([isActive])
+  @@map("categories")
+}
+
+// ─── Products ────────────────────────────────────────────────────────────────
+
+model Product {
+  id               String           @id @default(cuid())
+  name             String
+  slug             String           @unique
+  description      String?          @db.Text
+  price            Decimal          @db.Decimal(10, 2)
+  discountPercent  Int?
+  isDiscountActive Boolean          @default(false)
+  isFeatured       Boolean          @default(false)
+  isNewArrival     Boolean          @default(false)
+  isBestSeller     Boolean          @default(false)
+  isActive         Boolean          @default(true)
+  categoryId       String?
+  category         Category?        @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  images           ProductImage[]
+  colors           ProductColor[]
+  sizes            ProductSize[]
+  variants         ProductVariant[]
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  @@index([categoryId])
+  @@index([isActive])
+  @@index([isFeatured])
+  @@index([isNewArrival])
+  @@index([isBestSeller])
+  @@map("products")
+}
+
+// ─── Product Images ──────────────────────────────────────────────────────────
+
+model ProductImage {
+  id           String   @id @default(cuid())
+  productId    String
+  product      Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  url          String
+  altText      String?
+  displayOrder Int      @default(0)
+  isPrimary    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  @@index([productId, displayOrder])
+  @@map("product_images")
+}
+
+// ─── Colors & Sizes ──────────────────────────────────────────────────────────
+
+model ProductColor {
+  id        String           @id @default(cuid())
+  productId String
+  product   Product          @relation(fields: [productId], references: [id], onDelete: Cascade)
+  name      String           // e.g. "Beige", "Mauve", "Off White"
+  hexCode   String           // e.g. "#E8D8C8"
+  variants  ProductVariant[]
+  createdAt DateTime         @default(now())
+
+  @@unique([productId, name])
+  @@index([productId])
+  @@map("product_colors")
+}
+
+model ProductSize {
+  id           String           @id @default(cuid())
+  productId    String
+  product      Product          @relation(fields: [productId], references: [id], onDelete: Cascade)
+  name         String           // e.g. "S", "M", "L", "Free Size"
+  displayOrder Int              @default(0)
+  variants     ProductVariant[]
+  createdAt    DateTime         @default(now())
+
+  @@unique([productId, name])
+  @@index([productId, displayOrder])
+  @@map("product_sizes")
+}
+
+// ─── Product Variants & Inventory ────────────────────────────────────────────
+// Invariant: ProductVariant = Product + Color + Size
+// Every combination is unique and has its own independent inventory.
+
+model ProductVariant {
+  id         String        @id @default(cuid())
+  productId  String
+  product    Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  colorId    String
+  color      ProductColor  @relation(fields: [colorId], references: [id], onDelete: Cascade)
+  sizeId     String
+  size       ProductSize   @relation(fields: [sizeId], references: [id], onDelete: Cascade)
+  sku        String?       @unique
+  inventory  Inventory?
+  orderItems OrderItem[]
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  @@unique([productId, colorId, sizeId])
+  @@index([productId])
+  @@index([colorId])
+  @@index([sizeId])
+  @@map("product_variants")
+}
+
+model Inventory {
+  id                 String         @id @default(cuid())
+  variantId          String         @unique
+  variant            ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  quantity           Int            @default(0)
+  lowStockThreshold  Int            @default(2)
+  updatedAt          DateTime       @updatedAt
+
+  @@map("inventories")
+}
+
+// ─── Orders & Order Items ────────────────────────────────────────────────────
+
+model Order {
+  id                  String        @id @default(cuid())
+  orderNumber         String        @unique // e.g. "SH-2026-XXXX"
+  customerName        String
+  customerPhone       String
+  customerWhatsapp    String?
+  governorate         String
+  city                String
+  address             String        @db.Text
+  notes               String?       @db.Text
+  subtotal            Decimal       @db.Decimal(10, 2)
+  discountAmount      Decimal       @db.Decimal(10, 2) @default(0)
+  shippingFee         Decimal       @db.Decimal(10, 2) @default(0)
+  totalAmount         Decimal       @db.Decimal(10, 2)
+  orderStatus         OrderStatus   @default(PENDING)
+  paymentStatus       PaymentStatus @default(UNPAID)
+  source              String        @default("website") // website, instagram, tiktok, whatsapp, etc.
+  utmSource           String?
+  utmMedium           String?
+  utmCampaign         String?
+  isInventoryDeducted Boolean       @default(true)  // Prevents duplicate stock deduction
+  isInventoryRestored Boolean       @default(false) // Prevents duplicate stock restoration on cancel
+  items               OrderItem[]
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+
+  @@index([orderNumber])
+  @@index([customerPhone])
+  @@index([orderStatus])
+  @@index([source])
+  @@index([createdAt])
+  @@map("orders")
+}
+
+model OrderItem {
+  id              String          @id @default(cuid())
+  orderId         String
+  order           Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  variantId       String?
+  variant         ProductVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
+  productName     String
+  colorName       String
+  sizeName        String
+  quantity        Int
+  unitPrice       Decimal         @db.Decimal(10, 2)
+  discountPercent Int?
+  totalPrice      Decimal         @db.Decimal(10, 2)
+  createdAt       DateTime        @default(now())
+
+  @@index([orderId])
+  @@index([variantId])
+  @@map("order_items")
+}
+
+// ─── Store & Shipping Settings (Singletons) ──────────────────────────────────
+
+model StoreSettings {
+  id                  String   @id @default("default")
+  storeName           String   @default("Seen Hijabi")
+  logoUrl             String?
+  whatsappNumber      String   @default("+201000000000")
+  instagramUrl        String?  @default("https://www.instagram.com/seen.hijabi/")
+  tiktokUrl           String?
+  facebookUrl         String?
+  currency            String   @default("EGP")
+  announcementText    String?  @default("شحن مجاني لجميع محافظات مصر للطلبات المؤهلة | Free Shipping on Qualified Orders")
+  announcementEnabled Boolean  @default(true)
+  updatedAt           DateTime @updatedAt
+
+  @@map("store_settings")
+}
+
+model ShippingSettings {
+  id                   String   @id @default("default")
+  freeShippingEnabled  Boolean  @default(true)
+  freeShippingMinAmount Decimal? @db.Decimal(10, 2) @default(1000.00)
+  freeShippingMinQty   Int?     @default(2)
+  fixedShippingCost    Decimal  @db.Decimal(10, 2) @default(65.00)
+  updatedAt            DateTime @updatedAt
+
+  @@map("shipping_settings")
 }
