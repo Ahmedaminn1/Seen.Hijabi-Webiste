@@ -4,42 +4,9 @@ import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { calculateDiscountedPrice, calculateShippingFee } from "@/lib/utils/pricing";
 import { revalidatePath } from "next/cache";
+import { EGYPTIAN_GOVERNORATES } from "@/lib/constants/governorates";
 
 // ─── Validation Schema ────────────────────────────────────────────────────────
-
-const EGYPTIAN_GOVERNORATES = [
-  "القاهرة",
-  "الجيزة",
-  "الإسكندرية",
-  "الدقهلية",
-  "الشرقية",
-  "البحيرة",
-  "المنوفية",
-  "القليوبية",
-  "الغربية",
-  "كفر الشيخ",
-  "دمياط",
-  "بورسعيد",
-  "الإسماعيلية",
-  "السويس",
-  "شمال سيناء",
-  "جنوب سيناء",
-  "الفيوم",
-  "بني سويف",
-  "المنيا",
-  "أسيوط",
-  "سوهاج",
-  "قنا",
-  "الأقصر",
-  "أسوان",
-  "الوادي الجديد",
-  "مطروح",
-  "البحر الأحمر",
-] as const;
-
-export type Governorate = (typeof EGYPTIAN_GOVERNORATES)[number];
-
-export const GOVERNORATES_LIST = EGYPTIAN_GOVERNORATES;
 
 const CheckoutFormSchema = z.object({
   fullName: z
