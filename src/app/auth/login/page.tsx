@@ -108,3 +108,4 @@ export default function LoginPage({ searchParams }: LoginPageProps) {
     </main>
   );
 }
+

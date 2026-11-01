@@ -71,3 +71,4 @@ CREATE POLICY "Admin full access on store settings" ON "store_settings"
 
 CREATE POLICY "Admin full access on shipping settings" ON "shipping_settings"
   FOR ALL TO authenticated USING (auth.jwt() ->> 'email' = current_setting('request.jwt.claim.email', true));
+

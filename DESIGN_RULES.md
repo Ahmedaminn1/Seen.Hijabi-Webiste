@@ -102,3 +102,4 @@ Go through every line. Fix what fails.
 12. Is there a badge above the hero that says nothing?
 13. Is the hero headline above 56px, or any section over 96px of vertical padding?
 14. Does any element look oversized next to the text beside it?
+

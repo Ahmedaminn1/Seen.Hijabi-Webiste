@@ -71,3 +71,4 @@ export async function logoutAdmin(): Promise<void> {
   revalidatePath("/", "layout");
   redirect("/auth/login");
 }
+

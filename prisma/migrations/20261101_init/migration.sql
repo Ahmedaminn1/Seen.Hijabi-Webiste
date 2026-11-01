@@ -250,3 +250,4 @@ ON CONFLICT ("id") DO NOTHING;
 INSERT INTO "shipping_settings" ("id", "freeShippingEnabled", "freeShippingMinAmount", "freeShippingMinQty", "fixedShippingCost", "updatedAt")
 VALUES ('default', true, 1000.00, 2, 65.00, CURRENT_TIMESTAMP)
 ON CONFLICT ("id") DO NOTHING;
+
