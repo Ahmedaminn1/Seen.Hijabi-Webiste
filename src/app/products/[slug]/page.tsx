@@ -16,9 +16,18 @@ interface ProductPageProps {
 }
 
 export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
-  const { slug } = await params;
-  const product = await prisma.product.findUnique({
-    where: { slug },
+  const { slug: rawSlug } = await params;
+  let decodedSlug = rawSlug;
+  try {
+    decodedSlug = decodeURIComponent(rawSlug);
+  } catch {
+    // fallback to rawSlug
+  }
+
+  const product = await prisma.product.findFirst({
+    where: {
+      OR: [{ slug: rawSlug }, { slug: decodedSlug }],
+    },
     include: { images: { where: { isPrimary: true }, take: 1 } },
   });
 
@@ -40,11 +49,20 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
 }
 
 export default async function ProductDetailPage({ params }: ProductPageProps) {
-  const { slug } = await params;
+  const { slug: rawSlug } = await params;
+  let decodedSlug = rawSlug;
+  try {
+    decodedSlug = decodeURIComponent(rawSlug);
+  } catch {
+    // fallback to rawSlug
+  }
 
   // 1. Fetch Product with All Relations
-  const product = await prisma.product.findUnique({
-    where: { slug, isActive: true },
+  const product = await prisma.product.findFirst({
+    where: {
+      OR: [{ slug: rawSlug }, { slug: decodedSlug }],
+      isActive: true,
+    },
     include: {
       category: true,
       images: { orderBy: { displayOrder: "asc" } },
