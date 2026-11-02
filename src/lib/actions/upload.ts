@@ -97,3 +97,69 @@ export async function uploadProductImage(formData: FormData): Promise<UploadResu
   }
 }
 
+/**
+ * Server Action: Upload payment proof screenshot (فودافون كاش / إنستاباي)
+ */
+export async function uploadPaymentReceipt(formData: FormData): Promise<UploadResult> {
+  try {
+    const file = formData.get("file") as File | null;
+    if (!file) {
+      return { success: false, error: "لم يتم اختيار صورة الإيصال" };
+    }
+
+    if (!ALLOWED_MIME_TYPES.includes(file.type)) {
+      return {
+        success: false,
+        error: "نوع الملف غير مدعوم. يرجى رفع صورة إيصال التحويل بصيغة JPG أو PNG أو WebP",
+      };
+    }
+
+    if (file.size > MAX_FILE_SIZE) {
+      return {
+        success: false,
+        error: "حجم الصورة كبير — يرجى رفع سكرين شوت أقل من 5 ميجابايت",
+      };
+    }
+
+    const supabase = createAdminClient();
+    const bucketName = "product-images";
+
+    const ext = file.name.split(".").pop() || "jpg";
+    const fileName = `receipt-${Date.now()}-${nanoid(8)}.${ext}`;
+    const filePath = `receipts/${fileName}`;
+
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
+    const { error: uploadError } = await supabase.storage
+      .from(bucketName)
+      .upload(filePath, buffer, {
+        contentType: file.type,
+        upsert: false,
+      });
+
+    if (uploadError) {
+      console.error("[upload-receipt] Storage error:", uploadError);
+      return {
+        success: false,
+        error: `تعذر رفع صورة الإيصال: ${uploadError.message}`,
+      };
+    }
+
+    const { data: publicUrlData } = supabase.storage
+      .from(bucketName)
+      .getPublicUrl(filePath);
+
+    return {
+      success: true,
+      url: publicUrlData.publicUrl,
+    };
+  } catch (err) {
+    console.error("[upload-receipt] Unexpected error:", err);
+    return {
+      success: false,
+      error: "حدث خطأ أثناء رفع صورة الإيصال",
+    };
+  }
+}
+

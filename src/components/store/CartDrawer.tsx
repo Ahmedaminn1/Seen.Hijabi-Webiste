@@ -217,13 +217,9 @@ export function CartDrawer({
                 <span className="font-mono">{formatPrice(safeSubtotal)}</span>
               </div>
               <div className="flex justify-between text-[var(--muted-foreground)]">
-                <span>الشحن التقديري:</span>
-                <span className="font-mono">
-                  {shippingCalculation.isFree ? (
-                    <span className="text-emerald-700 font-medium">مجاني</span>
-                  ) : (
-                    formatPrice(shippingCalculation.fee)
-                  )}
+                <span>مصاريف الشحن:</span>
+                <span className="text-[11px] text-amber-800 font-medium">
+                  يبدأ من 50 ج.م (حسب المحافظة)
                 </span>
               </div>
               <div className="flex justify-between font-semibold text-sm pt-2 border-t border-[var(--border)] text-[var(--foreground)]">

@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { calculateDiscountedPrice, calculateShippingFee } from "@/lib/utils/pricing";
 import { revalidatePath } from "next/cache";
-import { EGYPTIAN_GOVERNORATES } from "@/lib/constants/governorates";
+import { EGYPTIAN_GOVERNORATES, getShippingFeeForGovernorate } from "@/lib/constants/governorates";
 
 // ─── Validation Schema ────────────────────────────────────────────────────────
 
@@ -38,6 +38,7 @@ const CheckoutFormSchema = z.object({
     .max(500, "العنوان طويل جداً")
     .trim(),
   notes: z.string().max(500, "الملاحظات طويلة جداً").trim().optional().or(z.literal("")),
+  receiptUrl: z.string().url().optional().or(z.literal("")),
   utmSource: z.string().max(100).optional().or(z.literal("")),
   // Cart items passed as JSON string from client
   cartJson: z.string().min(1, "السلة فارغة"),
@@ -93,6 +94,7 @@ export async function placeOrder(formData: FormData): Promise<CheckoutResult> {
     city: formData.get("city"),
     address: formData.get("address"),
     notes: formData.get("notes"),
+    receiptUrl: formData.get("receiptUrl"),
     utmSource: formData.get("utmSource"),
     cartJson: formData.get("cartJson"),
   };
@@ -203,23 +205,17 @@ export async function placeOrder(formData: FormData): Promise<CheckoutResult> {
     };
   });
 
-  // 6. Calculate shipping fee from DB settings
-  const shippingSettings = await prisma.shippingSettings.findUniqueOrThrow({
-    where: { id: "default" },
-  });
-
-  const totalQty = cartItems.reduce((sum, i) => sum + i.quantity, 0);
-  const { fee: shippingFee } = calculateShippingFee(subtotal, totalQty, {
-    freeShippingEnabled: shippingSettings.freeShippingEnabled,
-    freeShippingMinAmount:
-      shippingSettings.freeShippingMinAmount !== null
-        ? Number(shippingSettings.freeShippingMinAmount)
-        : null,
-    freeShippingMinQty: shippingSettings.freeShippingMinQty,
-    fixedShippingCost: Number(shippingSettings.fixedShippingCost),
-  });
-
+  // 6. Calculate authoritative shipping fee by customer governorate
+  const shippingFee = getShippingFeeForGovernorate(data.governorate);
   const totalAmount = subtotal + shippingFee;
+
+  // Format notes to include payment receipt if uploaded
+  const noteParts: string[] = [];
+  if (data.notes) noteParts.push(data.notes);
+  if (data.receiptUrl) {
+    noteParts.push(`[إثبات تحويل مصاريف الشحن]: ${data.receiptUrl}`);
+  }
+  const orderNotes = noteParts.length > 0 ? noteParts.join("\n\n") : null;
 
   // 7. Generate order number
   const orderNumber = await generateOrderNumber();
@@ -251,7 +247,7 @@ export async function placeOrder(formData: FormData): Promise<CheckoutResult> {
           governorate: data.governorate,
           city: data.city,
           address: data.address,
-          notes: data.notes || null,
+          notes: orderNotes,
           subtotal,
           discountAmount: 0,
           shippingFee,

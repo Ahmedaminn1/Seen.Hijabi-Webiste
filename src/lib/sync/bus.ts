@@ -44,3 +44,4 @@ export function subscribeStoreSync(listener: (event: StoreSyncEvent) => void) {
     bus.off("sync", listener);
   };
 }
+

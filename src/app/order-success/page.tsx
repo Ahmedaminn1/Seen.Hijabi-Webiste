@@ -1,9 +1,8 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { formatPrice } from "@/lib/utils/pricing";
 import { ClearCartOnMount } from "./ClearCartOnMount";
-import { CheckCircle2, MessageCircle, ArrowRight, Package } from "lucide-react";
+import { CheckCircle2, MessageCircle, ArrowRight, Package, AlertTriangle } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
 export const dynamic = "force-dynamic";
@@ -64,7 +63,7 @@ export default async function OrderSuccessPage({ searchParams }: OrderSuccessPro
   const rawPhone = storeSettings?.whatsappNumber || "201000000000";
   const cleanPhone = rawPhone.replace(/\D/g, "");
   const whatsappMessage = encodeURIComponent(
-    `مرحباً ${storeSettings?.storeName || "Seen Hijabi"}، بخصوص طلبي رقم (${order.orderNumber})، أود تأكيد الطلب ومتابعته.`
+    `مرحباً ${storeSettings?.storeName || "Seen Hijabi"}، بخصوص طلبي رقم (${order.orderNumber}) لمحافظة ${order.governorate}، مرفق إيصال تحويل مبلغ الشحن (${Number(order.shippingFee)} ج.م) لتأكيد وشحن الأوردر.`
   );
   const whatsappUrl = `https://wa.me/${cleanPhone}?text=${whatsappMessage}`;
 
@@ -77,7 +76,7 @@ export default async function OrderSuccessPage({ searchParams }: OrderSuccessPro
         <div className="text-center">
           <Link
             href="/"
-            className="font-serif text-2xl tracking-wide text-[oklch(0.145_0_0)] inline-block"
+            className="font-serif text-2xl tracking-wide text-[oklch(0.145_0_0)] inline-block font-medium"
             style={{ fontFamily: "var(--font-playfair), serif" }}
           >
             {storeSettings?.storeName || "Seen Hijabi"}
@@ -85,7 +84,7 @@ export default async function OrderSuccessPage({ searchParams }: OrderSuccessPro
         </div>
 
         {/* ── Success Card ────────────────────────────────────────── */}
-        <div className="bg-white rounded-2xl border border-[oklch(0.9_0_0)] p-6 sm:p-8 space-y-6">
+        <div className="bg-white rounded-2xl border border-[oklch(0.9_0_0)] p-6 sm:p-8 space-y-6 shadow-xs">
           <div className="flex flex-col items-center text-center space-y-3">
             <div className="w-12 h-12 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center">
               <CheckCircle2 className="w-6 h-6" />
@@ -97,10 +96,24 @@ export default async function OrderSuccessPage({ searchParams }: OrderSuccessPro
               تم استلام طلبك بنجاح!
             </h1>
             <p className="text-sm text-[oklch(0.45_0_0)] max-w-md">
-              شكراً لتسوقك معنا، سنقوم بالتواصل معك هاتفياً أو عبر الواتساب لتأكيد الشحن خلال أقرب وقت.
+              شكراً لتسوقك معنا، تم تسجيل الطلب وسنقوم بتجهيزه فور استلام إيصال تحويل الشحن.
             </p>
             <div className="inline-block bg-[oklch(0.97_0.01_80)] border border-[oklch(0.9_0_0)] px-4 py-2 rounded-lg text-sm font-mono text-[oklch(0.145_0_0)]">
               رقم الطلب: <span className="font-bold">{order.orderNumber}</span>
+            </div>
+
+            {/* ── Upfront Shipping Confirmation Card ── */}
+            <div className="w-full bg-amber-50/90 border-2 border-amber-300 rounded-xl p-4 sm:p-5 text-amber-950 text-right space-y-2.5 mt-2">
+              <div className="flex items-center gap-2 text-amber-900 font-bold text-sm">
+                <AlertTriangle className="w-4 h-4 text-amber-700 shrink-0" />
+                <span>خطوة هامة لتأكيد وشحن طلبك:</span>
+              </div>
+              <p className="text-xs sm:text-sm text-amber-900 leading-relaxed">
+                يرجى تحويل مصاريف الشحن (<strong className="font-bold">{formatPrice(Number(order.shippingFee))}</strong>) عبر فودافون كاش أو إنستاباي على الرقم: <strong className="font-mono text-sm underline px-1" dir="ltr">{storeSettings?.whatsappNumber || "رقم المتجر"}</strong> وإرسال سكرين شوت التحويل عبر زر الواتساب بالأسفل.
+              </p>
+              <p className="text-[11px] text-amber-800">
+                * باقي قيمة المنتجات (<strong className="font-bold">{formatPrice(Number(order.subtotal))}</strong>) تُدفع عند الاستلام.
+              </p>
             </div>
           </div>
 
@@ -174,21 +187,21 @@ export default async function OrderSuccessPage({ searchParams }: OrderSuccessPro
           {/* ── Financial Summary ─────────────────────────────────── */}
           <div className="space-y-2 text-sm">
             <div className="flex justify-between text-[oklch(0.45_0_0)]">
-              <span>المجموع الفرعي</span>
-              <span>{formatPrice(Number(order.subtotal))}</span>
+              <span>ثمن المنتجات (المطلوب عند الاستلام)</span>
+              <span className="font-semibold text-[oklch(0.145_0_0)]">{formatPrice(Number(order.subtotal))}</span>
             </div>
             <div className="flex justify-between text-[oklch(0.45_0_0)]">
-              <span>مصاريف الشحن</span>
-              {Number(order.shippingFee) === 0 ? (
-                <span className="text-emerald-600 font-medium">مجاني</span>
-              ) : (
-                <span>{formatPrice(Number(order.shippingFee))}</span>
-              )}
+              <span>مصاريف الشحن ({order.governorate}) — محولة مسبقاً</span>
+              <span className="font-semibold text-amber-900">{formatPrice(Number(order.shippingFee))}</span>
             </div>
             <Separator />
-            <div className="flex justify-between font-semibold text-base text-[oklch(0.145_0_0)] pt-1">
-              <span>الإجمالي المستحق عند الاستلام</span>
+            <div className="flex justify-between font-bold text-base text-[oklch(0.145_0_0)] pt-1">
+              <span>إجمالي قيمة الطلب</span>
               <span>{formatPrice(Number(order.totalAmount))}</span>
+            </div>
+            <div className="flex justify-between text-xs text-emerald-700 bg-emerald-50 p-2.5 rounded-md mt-2">
+              <span>المبلغ المستحق كاش عند الاستلام:</span>
+              <span className="font-bold">{formatPrice(Number(order.subtotal))}</span>
             </div>
           </div>
 
@@ -198,10 +211,10 @@ export default async function OrderSuccessPage({ searchParams }: OrderSuccessPro
               href={whatsappUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-full inline-flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#20ba59] text-white py-3 px-4 rounded-lg text-sm font-medium transition-colors"
+              className="w-full inline-flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#20ba59] text-white py-3.5 px-4 rounded-lg text-sm font-semibold transition-colors shadow-xs"
             >
-              <MessageCircle className="w-4 h-4" />
-              تأكيد الطلب عبر الواتساب مباشرة
+              <MessageCircle className="w-5 h-5" />
+              إرسال سكرين شوت التحويل وتأكيد الطلب عبر الواتساب
             </a>
 
             <Link
@@ -217,4 +230,3 @@ export default async function OrderSuccessPage({ searchParams }: OrderSuccessPro
     </div>
   );
 }
-
