@@ -31,3 +31,4 @@ export const EGYPTIAN_GOVERNORATES = [
 export type Governorate = (typeof EGYPTIAN_GOVERNORATES)[number];
 
 export const GOVERNORATES_LIST = EGYPTIAN_GOVERNORATES;
+

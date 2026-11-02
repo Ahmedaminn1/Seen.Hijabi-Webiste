@@ -48,29 +48,10 @@ export async function middleware(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
-  // ── Admin route protection ────────────────────────────────────────────────
-  if (pathname.startsWith("/admin")) {
-    if (!user) {
-      // Not logged in – redirect to login page
-      const loginUrl = request.nextUrl.clone();
-      loginUrl.pathname = "/auth/login";
-      loginUrl.searchParams.set("redirectTo", pathname);
-      return NextResponse.redirect(loginUrl);
-    }
-
-    // Verify the user is the designated admin
-    const adminEmail = process.env.ADMIN_EMAIL;
-    if (adminEmail && user.email !== adminEmail) {
-      // Authenticated but not the admin – return 403
-      return new NextResponse("Forbidden", { status: 403 });
-    }
-  }
-
-  // ── Redirect logged-in admin away from login page ─────────────────────────
-  if (pathname === "/auth/login" && user) {
-    const adminUrl = request.nextUrl.clone();
-    adminUrl.pathname = "/admin";
-    return NextResponse.redirect(adminUrl);
+  // ── Redirect admin & login traffic to separate Dashboard project ────────
+  const dashboardUrl = process.env.NEXT_PUBLIC_DASHBOARD_URL || "http://localhost:3001";
+  if (pathname.startsWith("/admin") || pathname === "/auth/login") {
+    return NextResponse.redirect(new URL(pathname, dashboardUrl));
   }
 
   return supabaseResponse;
