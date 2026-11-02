@@ -29,6 +29,7 @@ const nextConfig: NextConfig = {
     },
   },
   reactStrictMode: true,
+  serverExternalPackages: ["@prisma/adapter-pg", "pg"],
 };
 
 export default nextConfig;

@@ -15,48 +15,56 @@ export const dynamic = "force-dynamic";
 export default async function HomePage() {
   // 1. Fetch Store Settings & Shipping Settings
   const [storeSettings, shippingSettings] = await Promise.all([
-    prisma.storeSettings.findUnique({ where: { id: "default" } }),
-    prisma.shippingSettings.findUnique({ where: { id: "default" } }),
+    prisma.storeSettings.findUnique({ where: { id: "default" } }).catch(() => null),
+    prisma.shippingSettings.findUnique({ where: { id: "default" } }).catch(() => null),
   ]);
 
   // 2. Fetch Featured Categories
-  const categories = await prisma.category.findMany({
-    where: { isActive: true },
-    orderBy: { displayOrder: "asc" },
-  });
+  const categories = await prisma.category
+    .findMany({
+      where: { isActive: true },
+      orderBy: { displayOrder: "asc" },
+    })
+    .catch(() => []);
 
   // 3. Fetch Products for Homepage Sections
   const [newArrivals, bestSellers, specialOffers] = await Promise.all([
-    prisma.product.findMany({
-      where: { isActive: true, isNewArrival: true },
-      take: 4,
-      orderBy: { createdAt: "desc" },
-      include: {
-        images: { where: { isPrimary: true }, take: 1 },
-        colors: { take: 4 },
-        variants: { include: { inventory: true } },
-      },
-    }),
-    prisma.product.findMany({
-      where: { isActive: true, isBestSeller: true },
-      take: 4,
-      orderBy: { createdAt: "desc" },
-      include: {
-        images: { where: { isPrimary: true }, take: 1 },
-        colors: { take: 4 },
-        variants: { include: { inventory: true } },
-      },
-    }),
-    prisma.product.findMany({
-      where: { isActive: true, isDiscountActive: true },
-      take: 4,
-      orderBy: { discountPercent: "desc" },
-      include: {
-        images: { where: { isPrimary: true }, take: 1 },
-        colors: { take: 4 },
-        variants: { include: { inventory: true } },
-      },
-    }),
+    prisma.product
+      .findMany({
+        where: { isActive: true, isNewArrival: true },
+        take: 4,
+        orderBy: { createdAt: "desc" },
+        include: {
+          images: { where: { isPrimary: true }, take: 1 },
+          colors: { take: 4 },
+          variants: { include: { inventory: true } },
+        },
+      })
+      .catch(() => []),
+    prisma.product
+      .findMany({
+        where: { isActive: true, isBestSeller: true },
+        take: 4,
+        orderBy: { createdAt: "desc" },
+        include: {
+          images: { where: { isPrimary: true }, take: 1 },
+          colors: { take: 4 },
+          variants: { include: { inventory: true } },
+        },
+      })
+      .catch(() => []),
+    prisma.product
+      .findMany({
+        where: { isActive: true, isDiscountActive: true },
+        take: 4,
+        orderBy: { discountPercent: "desc" },
+        include: {
+          images: { where: { isPrimary: true }, take: 1 },
+          colors: { take: 4 },
+          variants: { include: { inventory: true } },
+        },
+      })
+      .catch(() => []),
   ]);
 
   const mapProductToCard = (p: (typeof newArrivals)[number]) => {

@@ -29,12 +29,14 @@ export default async function ProductsCatalogPage({ searchParams }: ProductsPage
 
   // 1. Fetch Store and Shipping Settings
   const [storeSettings, shippingSettings, categories] = await Promise.all([
-    prisma.storeSettings.findUnique({ where: { id: "default" } }),
-    prisma.shippingSettings.findUnique({ where: { id: "default" } }),
-    prisma.category.findMany({
-      where: { isActive: true },
-      orderBy: { displayOrder: "asc" },
-    }),
+    prisma.storeSettings.findUnique({ where: { id: "default" } }).catch(() => null),
+    prisma.shippingSettings.findUnique({ where: { id: "default" } }).catch(() => null),
+    prisma.category
+      .findMany({
+        where: { isActive: true },
+        orderBy: { displayOrder: "asc" },
+      })
+      .catch(() => []),
   ]);
 
   // 2. Build Where Filter

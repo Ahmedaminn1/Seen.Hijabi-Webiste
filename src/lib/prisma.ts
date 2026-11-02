@@ -10,7 +10,17 @@ function createPrismaClient(): PrismaClient {
     process.env.DATABASE_URL ||
     "postgresql://postgres:postgres@localhost:5432/postgres";
 
-  const adapter = new PrismaPg({ connectionString });
+  const isSupabase =
+    connectionString.includes("supabase.co") ||
+    connectionString.includes("supabase.com") ||
+    connectionString.includes("pooler.supabase");
+
+  const adapter = new PrismaPg({
+    connectionString,
+    ssl: isSupabase || process.env.NODE_ENV === "production"
+      ? { rejectUnauthorized: false }
+      : undefined,
+  });
 
   return new PrismaClient({
     adapter,
@@ -23,10 +33,6 @@ function createPrismaClient(): PrismaClient {
 
 /**
  * Prisma Client Singleton for Next.js.
- *
- * In development, hot reloading instantiates new modules repeatedly.
- * This pattern prevents multiple Prisma Client instances from being created,
- * which would otherwise exhaust the database connection pool.
  */
 export const prisma = globalForPrisma.prisma ?? createPrismaClient();
 
