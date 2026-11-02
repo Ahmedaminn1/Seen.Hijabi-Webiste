@@ -84,6 +84,8 @@ export default function CheckoutPage() {
   const [isUploadingReceipt, setIsUploadingReceipt] = useState(false);
   const [receiptError, setReceiptError] = useState<string | null>(null);
   const receiptInputRef = useRef<HTMLInputElement>(null);
+  const [transferPhone, setTransferPhone] = useState("");
+  const [transferPhoneError, setTransferPhoneError] = useState<string | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -159,6 +161,26 @@ export default function CheckoutPage() {
 
   const onSubmit = (values: CheckoutFormValues) => {
     setServerError(null);
+
+    // Mandatory receipt and transfer phone validation
+    let hasValidationErr = false;
+    if (!receiptUrl) {
+      setReceiptError("مطلوب: يرجى رفع سكرين شوت إيصال التحويل لتأكيد الطلب");
+      hasValidationErr = true;
+    }
+    if (!transferPhone || transferPhone.trim().length < 8) {
+      setTransferPhoneError("مطلوب: يرجى إدخال رقم الهاتف / الحساب الذي قمت بالتحويل منه (8 أرقام على الأقل)");
+      hasValidationErr = true;
+    }
+
+    if (hasValidationErr) {
+      const alertBox = document.getElementById("shipping-prepay-alert");
+      if (alertBox) {
+        alertBox.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+      return;
+    }
+
     startTransition(async () => {
       const formData = new FormData();
       formData.set("fullName", values.fullName);
@@ -169,6 +191,7 @@ export default function CheckoutPage() {
       formData.set("address", values.address);
       formData.set("notes", values.notes ?? "");
       formData.set("receiptUrl", receiptUrl);
+      formData.set("transferPhone", transferPhone.trim());
       formData.set("utmSource", utmSource);
       formData.set("cartJson", JSON.stringify(items));
 
@@ -242,23 +265,27 @@ export default function CheckoutPage() {
             </div>
 
             {/* ── Important Shipping Pre-payment Alert Box ── */}
-            <div className="bg-amber-50/90 border-2 border-amber-300 rounded-xl p-4 sm:p-5 text-amber-950 space-y-4 shadow-xs" dir="rtl">
+            <div
+              id="shipping-prepay-alert"
+              className="bg-amber-50/90 border-2 border-amber-400 rounded-xl p-4 sm:p-5 text-amber-950 space-y-4 shadow-xs"
+              dir="rtl"
+            >
               <div className="flex items-start gap-3">
                 <div className="p-2 bg-amber-200 text-amber-900 rounded-lg shrink-0 mt-0.5">
                   <AlertTriangle className="w-5 h-5" />
                 </div>
                 <div className="space-y-1">
                   <h3 className="font-bold text-sm sm:text-base text-amber-950">
-                    تنبيه هام لتأكيد وشحن طلبك (تحويل مصاريف الشحن مسبقاً)
+                    تنبيه إلزامي لتأكيد وشحن طلبك (تحويل مصاريف الشحن مسبقاً)
                   </h3>
                   <p className="text-xs sm:text-sm text-amber-900 leading-relaxed">
-                    نظراً لسياسة شركات الشحن، <strong className="text-amber-950 font-bold">لا يتم تسليم الأوردر للمندوب إلا بعد تحويل مبلغ الشحن مسبقاً ({formatPrice(shippingFee)}) لجدية الاستلام</strong>. باقي ثمن المنتجات ({formatPrice(sub)}) يتم دفعه كاش عند الاستلام.
+                    نظراً لسياسة شركات الشحن، <strong className="text-amber-950 font-bold underline">لا يتم تسليم وتأكيد الأوردر للمندوب إلا بعد تحويل مبلغ الشحن مسبقاً ({formatPrice(shippingFee)}) لجدية الاستلام</strong>. باقي ثمن المنتجات ({formatPrice(sub)}) يتم دفعه كاش عند الاستلام.
                   </p>
                 </div>
               </div>
 
               {/* Payment Details Container */}
-              <div className="bg-white/95 rounded-lg p-3.5 sm:p-4 border border-amber-200 space-y-2.5">
+              <div className="bg-white/95 rounded-lg p-3.5 sm:p-4 border border-amber-200 space-y-3.5">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-semibold text-amber-900">
@@ -271,7 +298,7 @@ export default function CheckoutPage() {
                   <button
                     type="button"
                     onClick={handleCopyPhone}
-                    className="inline-flex items-center justify-center gap-1.5 text-xs font-medium bg-amber-900 hover:bg-amber-800 text-white px-3 py-1.5 rounded transition-colors self-start sm:self-auto"
+                    className="inline-flex items-center justify-center gap-1.5 text-xs font-medium bg-amber-900 hover:bg-amber-800 text-white px-3 py-1.5 rounded transition-colors self-start sm:self-auto cursor-pointer"
                   >
                     {copied ? (
                       <>
@@ -287,14 +314,46 @@ export default function CheckoutPage() {
                   </button>
                 </div>
 
-                <p className="text-[11px] text-amber-800 leading-normal">
+                <p className="text-[11px] text-amber-800 leading-normal bg-amber-50/70 p-2 rounded border border-amber-200/50">
                   * مبلغ الشحن المطلوب تحويله لتأكيد الطلب هو: <strong className="font-bold">{formatPrice(shippingFee)}</strong> {selectedGovernorate ? `(لمحافظة ${selectedGovernorate})` : ""}.
                 </p>
 
-                {/* Upload Receipt Screenshot */}
+                {/* Transfer Phone Number Input (MANDATORY) */}
+                <div className="pt-2 border-t border-amber-100 space-y-1.5">
+                  <Label htmlFor="transferPhoneInput" className="text-xs font-bold text-amber-950 flex items-center gap-1">
+                    <span>رقم الهاتف / الحساب الذي قمت بالتحويل منه</span>
+                    <span className="text-red-600 font-bold">* (إلزامي)</span>
+                  </Label>
+                  <p className="text-[11px] text-amber-800">
+                    اكتبي رقم المحفظة أو الحساب الذي تم تحويل مصاريف الشحن منه لمطابقة عملية الدفع:
+                  </p>
+                  <Input
+                    id="transferPhoneInput"
+                    type="text"
+                    dir="ltr"
+                    placeholder="مثال: 01012345678 أو معرف إنستاباي"
+                    value={transferPhone}
+                    onChange={(e) => {
+                      setTransferPhone(e.target.value);
+                      if (transferPhoneError) setTransferPhoneError(null);
+                    }}
+                    className={`h-10 text-xs sm:text-sm bg-amber-50/30 ${
+                      transferPhoneError ? "border-red-500 ring-1 ring-red-500" : "border-amber-300"
+                    }`}
+                  />
+                  {transferPhoneError && (
+                    <p className="text-xs text-red-600 font-medium flex items-center gap-1">
+                      <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                      <span>{transferPhoneError}</span>
+                    </p>
+                  )}
+                </div>
+
+                {/* Upload Receipt Screenshot (MANDATORY) */}
                 <div className="pt-2 border-t border-amber-100 space-y-2">
-                  <Label className="text-xs font-semibold text-amber-950 block">
-                    إرفاق سكرين شوت التحويل (اختياري الآن — ويمكنك إرسالها لاحقاً عبر واتساب):
+                  <Label className="text-xs font-bold text-amber-950 flex items-center gap-1">
+                    <span>إرفاق سكرين شوت إيصال التحويل</span>
+                    <span className="text-red-600 font-bold">* (إلزامي)</span>
                   </Label>
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2.5">
                     <input
@@ -307,14 +366,23 @@ export default function CheckoutPage() {
                     <Button
                       type="button"
                       variant="outline"
-                      onClick={() => receiptInputRef.current?.click()}
+                      onClick={() => {
+                        receiptInputRef.current?.click();
+                        if (receiptError) setReceiptError(null);
+                      }}
                       disabled={isUploadingReceipt}
-                      className="h-9 text-xs gap-2 border-amber-300 bg-white hover:bg-amber-50 text-amber-950 font-medium"
+                      className={`h-10 text-xs gap-2 font-medium cursor-pointer ${
+                        receiptUrl
+                          ? "border-emerald-500 bg-emerald-50 text-emerald-900"
+                          : receiptError
+                          ? "border-red-500 bg-red-50 text-red-900"
+                          : "border-amber-400 bg-white hover:bg-amber-50 text-amber-950"
+                      }`}
                     >
                       {isUploadingReceipt ? (
                         <>
                           <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                          <span>جاري رفع الإيصال...</span>
+                          <span>جاري رفع صورة الإيصال...</span>
                         </>
                       ) : receiptUrl ? (
                         <>
@@ -323,20 +391,23 @@ export default function CheckoutPage() {
                         </>
                       ) : (
                         <>
-                          <Upload className="w-4 h-4" />
-                          <span>رفع سكرين شوت التحويل 📸</span>
+                          <Upload className="w-4 h-4 text-amber-800" />
+                          <span>اضغط هنا لرفع سكرين شوت التحويل 📸</span>
                         </>
                       )}
                     </Button>
                     {receiptUrl && (
                       <span className="text-[11px] text-emerald-700 font-medium flex items-center gap-1">
                         <Check className="w-3.5 h-3.5" />
-                        سيتم حفظ الإيصال مع بيانات طلبك تلقائياً
+                        تم حفظ الإيصال وسيتم ربطه بطلبك تلقائياً
                       </span>
                     )}
                   </div>
                   {receiptError && (
-                    <p className="text-xs text-red-600">{receiptError}</p>
+                    <p className="text-xs text-red-600 font-medium flex items-center gap-1">
+                      <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                      <span>{receiptError}</span>
+                    </p>
                   )}
                 </div>
               </div>
@@ -589,10 +660,22 @@ export default function CheckoutPage() {
                 type="submit"
                 form="checkout-form"
                 disabled={isPending}
-                className="w-full bg-[oklch(0.145_0_0)] text-white hover:bg-[oklch(0.25_0_0)] transition-colors h-12 text-sm sm:text-base font-medium rounded-lg disabled:opacity-60 disabled:cursor-not-allowed"
+                className="w-full bg-[oklch(0.145_0_0)] text-white hover:bg-[oklch(0.25_0_0)] transition-colors h-12 text-sm sm:text-base font-medium rounded-lg disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
               >
                 {isPending ? "جاري تسجيل وتأكيد الطلب..." : "تأكيد الطلب الآن"}
               </Button>
+
+              {(!receiptUrl || !transferPhone.trim()) && (
+                <div
+                  className="p-2.5 rounded-lg bg-amber-50 border border-amber-200 text-amber-900 text-[11px] flex items-start gap-1.5 leading-relaxed"
+                  dir="rtl"
+                >
+                  <AlertTriangle className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
+                  <span>
+                    <strong>تنبيه:</strong> تأكيد الطلب يتطلب إرفاق سكرين شوت التحويل وكتابة رقم المحول منه بالأعلى.
+                  </span>
+                </div>
+              )}
 
               <div className="flex items-center gap-2 text-center justify-center text-[11px] text-[oklch(0.55_0_0)]">
                 <Info className="w-3.5 h-3.5 shrink-0" />

@@ -38,7 +38,12 @@ const CheckoutFormSchema = z.object({
     .max(500, "العنوان طويل جداً")
     .trim(),
   notes: z.string().max(500, "الملاحظات طويلة جداً").trim().optional().or(z.literal("")),
-  receiptUrl: z.string().url().optional().or(z.literal("")),
+  receiptUrl: z.string().url("يرجى رفع سكرين شوت التحويل أولاً"),
+  transferPhone: z
+    .string()
+    .min(8, "رقم هاتف التحويل غير صحيح")
+    .max(20, "رقم هاتف التحويل غير صحيح")
+    .trim(),
   utmSource: z.string().max(100).optional().or(z.literal("")),
   // Cart items passed as JSON string from client
   cartJson: z.string().min(1, "السلة فارغة"),
@@ -95,6 +100,7 @@ export async function placeOrder(formData: FormData): Promise<CheckoutResult> {
     address: formData.get("address"),
     notes: formData.get("notes"),
     receiptUrl: formData.get("receiptUrl"),
+    transferPhone: formData.get("transferPhone"),
     utmSource: formData.get("utmSource"),
     cartJson: formData.get("cartJson"),
   };
@@ -105,7 +111,12 @@ export async function placeOrder(formData: FormData): Promise<CheckoutResult> {
     for (const [field, msgs] of Object.entries(parsed.error.flatten().fieldErrors)) {
       fieldErrors[field] = msgs ?? [];
     }
-    return { success: false, error: "تحقق من البيانات المدخلة", fieldErrors };
+    const firstErrorMessage =
+      fieldErrors.receiptUrl?.[0] ||
+      fieldErrors.transferPhone?.[0] ||
+      Object.values(fieldErrors).flat()[0] ||
+      "تحقق من البيانات المدخلة";
+    return { success: false, error: firstErrorMessage, fieldErrors };
   }
 
   const data = parsed.data;
@@ -212,9 +223,8 @@ export async function placeOrder(formData: FormData): Promise<CheckoutResult> {
   // Format notes to include payment receipt if uploaded
   const noteParts: string[] = [];
   if (data.notes) noteParts.push(data.notes);
-  if (data.receiptUrl) {
-    noteParts.push(`[إثبات تحويل مصاريف الشحن]: ${data.receiptUrl}`);
-  }
+  noteParts.push(`رقم التحويل: ${data.transferPhone}`);
+  noteParts.push(`[إثبات تحويل مصاريف الشحن]: ${data.receiptUrl}`);
   const orderNotes = noteParts.length > 0 ? noteParts.join("\n\n") : null;
 
   // 7. Generate order number
