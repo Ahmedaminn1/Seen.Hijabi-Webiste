@@ -204,8 +204,17 @@ export async function updateVariantStock(
  */
 export async function getProductLiveStock(
   productId: string
-): Promise<Array<{ id: string; colorId: string; sizeId: string; sku: string | null; stock: number }>> {
+): Promise<Array<{ id: string; colorId: string; sizeId: string; sku: string | null; stock: number }> | null> {
   try {
+    const product = await prisma.product.findUnique({
+      where: { id: productId },
+      select: { id: true, isActive: true },
+    });
+
+    if (!product || !product.isActive) {
+      return null; // Product deleted or deactivated
+    }
+
     const variants = await prisma.productVariant.findMany({
       where: { productId },
       select: {

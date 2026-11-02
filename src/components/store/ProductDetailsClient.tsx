@@ -88,6 +88,11 @@ export function ProductDetailsClient({ product }: ProductDetailsClientProps) {
   const refreshLiveStock = useCallback(async () => {
     try {
       const liveVariants = await getProductLiveStock(product.id);
+      if (liveVariants === null) {
+        // Product was deleted or archived in dashboard — refresh to 404 / redirect
+        router.refresh();
+        return;
+      }
       if (liveVariants && liveVariants.length > 0) {
         setVariants((prev) =>
           prev.map((v) => {

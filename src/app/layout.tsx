@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { StoreSyncListener } from "@/components/store/StoreSyncListener";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -47,6 +48,7 @@ export default function RootLayout({
         />
       </head>
       <body className="antialiased" suppressHydrationWarning>
+        <StoreSyncListener />
         {children}
       </body>
     </html>
