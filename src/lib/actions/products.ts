@@ -198,3 +198,37 @@ export async function updateVariantStock(
   }
 }
 
+/**
+ * Server Action: Get real-time variant inventory stock for a product.
+ * Returns up-to-the-millisecond stock counts from the database without full page reload.
+ */
+export async function getProductLiveStock(
+  productId: string
+): Promise<Array<{ id: string; colorId: string; sizeId: string; sku: string | null; stock: number }>> {
+  try {
+    const variants = await prisma.productVariant.findMany({
+      where: { productId },
+      select: {
+        id: true,
+        colorId: true,
+        sizeId: true,
+        sku: true,
+        inventory: {
+          select: { quantity: true },
+        },
+      },
+    });
+
+    return variants.map((v) => ({
+      id: v.id,
+      colorId: v.colorId,
+      sizeId: v.sizeId,
+      sku: v.sku,
+      stock: v.inventory?.quantity ?? 0,
+    }));
+  } catch (error) {
+    console.error("Error fetching live stock:", error);
+    return [];
+  }
+}
+

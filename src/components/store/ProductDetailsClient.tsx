@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { formatPrice } from "@/lib/utils/pricing";
 import { useCartStore } from "@/store/cart";
+import { getProductLiveStock } from "@/lib/actions/products";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -64,6 +66,7 @@ interface ProductDetailsClientProps {
 }
 
 export function ProductDetailsClient({ product }: ProductDetailsClientProps) {
+  const router = useRouter();
   const images = product.images.length > 0
     ? product.images
     : [{ id: "placeholder", url: "/placeholder.png", altText: product.name, displayOrder: 0 }];
@@ -77,8 +80,57 @@ export function ProductDetailsClient({ product }: ProductDetailsClientProps) {
   );
   const [quantity, setQuantity] = useState(1);
   const [addedToast, setAddedToast] = useState(false);
+  const [variants, setVariants] = useState<ProductVariantItem[]>(product.variants);
 
   const addItemToCart = useCartStore((state) => state.addItem);
+
+  // Live stock synchronization function
+  const refreshLiveStock = useCallback(async () => {
+    try {
+      const liveVariants = await getProductLiveStock(product.id);
+      if (liveVariants && liveVariants.length > 0) {
+        setVariants((prev) =>
+          prev.map((v) => {
+            const updated = liveVariants.find((lv) => lv.id === v.id);
+            return updated ? { ...v, stock: updated.stock } : v;
+          })
+        );
+      }
+    } catch {
+      router.refresh();
+    }
+  }, [product.id, router]);
+
+  // Sync if parent props change
+  useEffect(() => {
+    setVariants(product.variants);
+  }, [product.variants]);
+
+  // Auto-refresh stock on window focus, tab switch, and every 4 seconds in the background
+  useEffect(() => {
+    const handleFocus = () => {
+      refreshLiveStock();
+      router.refresh();
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        refreshLiveStock();
+        router.refresh();
+      }
+    };
+
+    window.addEventListener("focus", handleFocus);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    const interval = setInterval(refreshLiveStock, 4000);
+
+    return () => {
+      window.removeEventListener("focus", handleFocus);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      clearInterval(interval);
+    };
+  }, [refreshLiveStock, router]);
 
   // Price calculations
   const hasDiscount =
@@ -93,8 +145,8 @@ export function ProductDetailsClient({ product }: ProductDetailsClientProps) {
       : null;
   const currentPrice = discountedPrice ?? product.price;
 
-  // Find the exact variant corresponding to selectedColor + selectedSize
-  const currentVariant = product.variants.find(
+  // Find the exact variant corresponding to selectedColor + selectedSize using live variants
+  const currentVariant = variants.find(
     (v) => v.colorId === selectedColor.id && v.sizeId === selectedSize.id
   );
 
@@ -102,12 +154,12 @@ export function ProductDetailsClient({ product }: ProductDetailsClientProps) {
   const isOutOfStock = currentStock <= 0;
 
   // Check overall product stock
-  const totalStock = product.variants.reduce((sum, v) => sum + v.stock, 0);
+  const totalStock = variants.reduce((sum, v) => sum + v.stock, 0);
   const isEntirelySoldOut = totalStock <= 0;
 
   // Helper to check stock for a specific size under currently selected color
   const getStockForSize = (sizeId: string) => {
-    const v = product.variants.find(
+    const v = variants.find(
       (v) => v.colorId === selectedColor.id && v.sizeId === sizeId
     );
     return v ? v.stock : 0;
@@ -240,7 +292,10 @@ export function ProductDetailsClient({ product }: ProductDetailsClientProps) {
                   <button
                     key={c.id}
                     type="button"
-                    onClick={() => setSelectedColor(c)}
+                    onClick={() => {
+                      setSelectedColor(c);
+                      refreshLiveStock();
+                    }}
                     className={`flex items-center gap-2 px-3 py-1.5 rounded-sm border text-xs transition-colors ${
                       isSelected
                         ? "border-[var(--primary)] bg-[var(--primary)] text-[var(--primary-foreground)]"
@@ -283,7 +338,10 @@ export function ProductDetailsClient({ product }: ProductDetailsClientProps) {
                   <button
                     key={s.id}
                     type="button"
-                    onClick={() => setSelectedSize(s)}
+                    onClick={() => {
+                      setSelectedSize(s);
+                      refreshLiveStock();
+                    }}
                     className={`min-w-12 h-9 px-3 font-mono text-xs font-medium rounded-sm border transition-colors relative ${
                       isSelected
                         ? "border-[var(--primary)] bg-[var(--primary)] text-[var(--primary-foreground)]"
