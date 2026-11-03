@@ -93,6 +93,9 @@ export default async function HomePage() {
     fixedShippingCost: Number(shippingSettings?.fixedShippingCost ?? 65),
   };
 
+  const activeInstagramUrl = storeSettings?.instagramUrl || "https://www.instagram.com/seen.hijabi/";
+  const activeTiktokUrl = storeSettings?.tiktokUrl || "https://www.tiktok.com/@seen.hijabi";
+
   return (
     <div className="min-h-screen flex flex-col bg-[var(--background)]">
       {/* UTM Tracking Capture */}
@@ -111,8 +114,8 @@ export default async function HomePage() {
       <Navbar
         categories={categories.map((c) => ({ name: c.name, slug: c.slug }))}
         storeName={storeSettings?.storeName || "Seen Hijabi"}
-        instagramUrl={storeSettings?.instagramUrl}
-        tiktokUrl={storeSettings?.tiktokUrl}
+        instagramUrl={activeInstagramUrl}
+        tiktokUrl={activeTiktokUrl}
         shippingSettings={shippingData}
       />
 
@@ -260,12 +263,12 @@ export default async function HomePage() {
         </section>
 
         {/* 8. Social Media Inspiration Banner */}
-        {(storeSettings?.instagramUrl || storeSettings?.tiktokUrl) && (
+        {(activeInstagramUrl || activeTiktokUrl) && (
           <section className="py-14 bg-[var(--card)] text-center border-b border-[var(--border)]">
             <div className="max-w-xl mx-auto px-4 space-y-4">
               <div className="flex items-center justify-center gap-3 text-[var(--foreground)]">
-                {storeSettings?.instagramUrl && <InstagramIcon className="w-6 h-6" />}
-                {storeSettings?.tiktokUrl && <TikTokIcon className="w-6 h-6" />}
+                {activeInstagramUrl && <InstagramIcon className="w-6 h-6" />}
+                {activeTiktokUrl && <TikTokIcon className="w-6 h-6" />}
               </div>
               <h2 className="text-xl font-serif tracking-tight text-[var(--foreground)]">
                 تابعي إطلالاتنا على وسائل التواصل
@@ -274,9 +277,9 @@ export default async function HomePage() {
                 شاهدي تنسيقات الحجاب اليومية وريلز أحدث الكولكشنات على حساباتنا الرسمية
               </p>
               <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
-                {storeSettings?.instagramUrl && (
+                {activeInstagramUrl && (
                   <a
-                    href={storeSettings.instagramUrl}
+                    href={activeInstagramUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 h-9 px-5 border border-[var(--border)] text-xs font-medium rounded-sm hover:border-[var(--brand-gold)] transition-colors"
@@ -285,9 +288,9 @@ export default async function HomePage() {
                     <span>متابعة على Instagram &larr;</span>
                   </a>
                 )}
-                {storeSettings?.tiktokUrl && (
+                {activeTiktokUrl && (
                   <a
-                    href={storeSettings.tiktokUrl}
+                    href={activeTiktokUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 h-9 px-5 border border-[var(--border)] text-xs font-medium rounded-sm hover:border-[var(--brand-gold)] transition-colors"
@@ -306,8 +309,8 @@ export default async function HomePage() {
       <Footer
         storeName={storeSettings?.storeName || "Seen Hijabi"}
         whatsappNumber={storeSettings?.whatsappNumber}
-        instagramUrl={storeSettings?.instagramUrl}
-        tiktokUrl={storeSettings?.tiktokUrl}
+        instagramUrl={activeInstagramUrl}
+        tiktokUrl={activeTiktokUrl}
         facebookUrl={storeSettings?.facebookUrl}
       />
 

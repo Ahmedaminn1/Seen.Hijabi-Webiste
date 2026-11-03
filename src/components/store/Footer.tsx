@@ -15,10 +15,12 @@ interface FooterProps {
 export function Footer({
   storeName = "Seen Hijabi",
   whatsappNumber = "+201000000000",
-  instagramUrl = "https://www.instagram.com/seen.hijabi/",
-  tiktokUrl = "https://www.tiktok.com/@seen.hijabi",
+  instagramUrl,
+  tiktokUrl,
   facebookUrl,
 }: FooterProps) {
+  const activeInstagram = instagramUrl || "https://www.instagram.com/seen.hijabi/";
+  const activeTiktok = tiktokUrl || "https://www.tiktok.com/@seen.hijabi";
   return (
     <footer className="bg-[var(--card)] border-t border-[var(--border)] mt-20">
       {/* Trust Badges */}
@@ -77,11 +79,11 @@ export function Footer({
           <p className="text-[11px] text-[var(--muted-foreground)] leading-relaxed">
             علامة أزياء مصرية متخصصة في تقديم أرقى الفساتين، العبايات، والحجابات العصرية بطابع أنثوي محتشم وراقي.
           </p>
-          {(instagramUrl || tiktokUrl) && (
+          {(activeInstagram || activeTiktok) && (
             <div className="flex items-center gap-2 pt-2">
-              {instagramUrl && (
+              {activeInstagram && (
                 <a
-                  href={instagramUrl}
+                  href={activeInstagram}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="p-1.5 text-[var(--muted-foreground)] hover:text-[var(--foreground)] border border-[var(--border)] rounded-sm transition-colors"
@@ -91,9 +93,9 @@ export function Footer({
                   <InstagramIcon className="w-4 h-4" />
                 </a>
               )}
-              {tiktokUrl && (
+              {activeTiktok && (
                 <a
-                  href={tiktokUrl}
+                  href={activeTiktok}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="p-1.5 text-[var(--muted-foreground)] hover:text-[var(--foreground)] border border-[var(--border)] rounded-sm transition-colors"

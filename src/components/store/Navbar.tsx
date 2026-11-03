@@ -29,10 +29,12 @@ interface NavbarProps {
 export function Navbar({
   categories = [],
   storeName = "Seen Hijabi",
-  instagramUrl = "https://www.instagram.com/seen.hijabi/",
-  tiktokUrl = "https://www.tiktok.com/@seen.hijabi",
+  instagramUrl,
+  tiktokUrl,
   shippingSettings,
 }: NavbarProps) {
+  const activeInstagram = instagramUrl || "https://www.instagram.com/seen.hijabi/";
+  const activeTiktok = tiktokUrl || "https://www.tiktok.com/@seen.hijabi";
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -151,9 +153,9 @@ export function Navbar({
           </div>
 
           {/* Social Links */}
-          {instagramUrl && (
+          {activeInstagram && (
             <a
-              href={instagramUrl}
+              href={activeInstagram}
               target="_blank"
               rel="noopener noreferrer"
               className="hidden sm:inline-flex p-1.5 text-[var(--foreground)] hover:text-[var(--brand-gold)] transition-colors"
@@ -163,9 +165,9 @@ export function Navbar({
               <InstagramIcon className="w-4 h-4" />
             </a>
           )}
-          {tiktokUrl && (
+          {activeTiktok && (
             <a
-              href={tiktokUrl}
+              href={activeTiktok}
               target="_blank"
               rel="noopener noreferrer"
               className="hidden sm:inline-flex p-1.5 text-[var(--foreground)] hover:text-[var(--brand-gold)] transition-colors"
@@ -242,9 +244,9 @@ export function Navbar({
               لوحة الإدارة | Admin Portal
             </Link>
             <div className="flex items-center gap-3">
-              {instagramUrl && (
+              {activeInstagram && (
                 <a
-                  href={instagramUrl}
+                  href={activeInstagram}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-[var(--muted-foreground)] hover:text-[var(--foreground)] flex items-center gap-1"
@@ -253,9 +255,9 @@ export function Navbar({
                   <span>Instagram</span>
                 </a>
               )}
-              {tiktokUrl && (
+              {activeTiktok && (
                 <a
-                  href={tiktokUrl}
+                  href={activeTiktok}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-[var(--muted-foreground)] hover:text-[var(--foreground)] flex items-center gap-1"

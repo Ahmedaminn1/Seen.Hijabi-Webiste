@@ -90,6 +90,9 @@ export default async function ProductsCatalogPage({ searchParams }: ProductsPage
     fixedShippingCost: Number(shippingSettings?.fixedShippingCost ?? 65),
   };
 
+  const activeInstagramUrl = storeSettings?.instagramUrl || "https://www.instagram.com/seen.hijabi/";
+  const activeTiktokUrl = storeSettings?.tiktokUrl || "https://www.tiktok.com/@seen.hijabi";
+
   const selectedCategory = categories.find((c) => c.slug === categorySlug);
 
   return (
@@ -109,8 +112,8 @@ export default async function ProductsCatalogPage({ searchParams }: ProductsPage
       <Navbar
         categories={categories.map((c) => ({ name: c.name, slug: c.slug }))}
         storeName={storeSettings?.storeName || "Seen Hijabi"}
-        instagramUrl={storeSettings?.instagramUrl}
-        tiktokUrl={storeSettings?.tiktokUrl}
+        instagramUrl={activeInstagramUrl}
+        tiktokUrl={activeTiktokUrl}
         shippingSettings={shippingData}
       />
 
@@ -283,8 +286,8 @@ export default async function ProductsCatalogPage({ searchParams }: ProductsPage
       <Footer
         storeName={storeSettings?.storeName || "Seen Hijabi"}
         whatsappNumber={storeSettings?.whatsappNumber}
-        instagramUrl={storeSettings?.instagramUrl}
-        tiktokUrl={storeSettings?.tiktokUrl}
+        instagramUrl={activeInstagramUrl}
+        tiktokUrl={activeTiktokUrl}
         facebookUrl={storeSettings?.facebookUrl}
       />
 
