@@ -8,6 +8,7 @@ import { Footer } from "@/components/store/Footer";
 import { WhatsAppButton } from "@/components/store/WhatsAppButton";
 import { UtmTracker } from "@/components/store/UtmTracker";
 import { InstagramIcon } from "@/components/ui/InstagramIcon";
+import { TikTokIcon } from "@/components/ui/TikTokIcon";
 import { ArrowLeft, Tag } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -111,6 +112,7 @@ export default async function HomePage() {
         categories={categories.map((c) => ({ name: c.name, slug: c.slug }))}
         storeName={storeSettings?.storeName || "Seen Hijabi"}
         instagramUrl={storeSettings?.instagramUrl}
+        tiktokUrl={storeSettings?.tiktokUrl}
         shippingSettings={shippingData}
       />
 
@@ -257,27 +259,43 @@ export default async function HomePage() {
           </div>
         </section>
 
-        {/* 8. Instagram Inspiration Banner */}
-        {storeSettings?.instagramUrl && (
+        {/* 8. Social Media Inspiration Banner */}
+        {(storeSettings?.instagramUrl || storeSettings?.tiktokUrl) && (
           <section className="py-14 bg-[var(--card)] text-center border-b border-[var(--border)]">
             <div className="max-w-xl mx-auto px-4 space-y-4">
-              <InstagramIcon className="w-6 h-6 mx-auto text-[var(--foreground)]" />
+              <div className="flex items-center justify-center gap-3 text-[var(--foreground)]">
+                {storeSettings?.instagramUrl && <InstagramIcon className="w-6 h-6" />}
+                {storeSettings?.tiktokUrl && <TikTokIcon className="w-6 h-6" />}
+              </div>
               <h2 className="text-xl font-serif tracking-tight text-[var(--foreground)]">
-                تابعي إطلالاتنا على انستجرام
+                تابعي إطلالاتنا على وسائل التواصل
               </h2>
               <p className="text-xs text-[var(--muted-foreground)] leading-relaxed">
-                شاهدي تنسيقات الحجاب اليومية وريلز أحدث الكولكشنات على حسابنا الرسمي @seen.hijabi
+                شاهدي تنسيقات الحجاب اليومية وريلز أحدث الكولكشنات على حساباتنا الرسمية
               </p>
-              <div className="pt-2">
-                <a
-                  href={storeSettings.instagramUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 h-9 px-5 border border-[var(--border)] text-xs font-medium rounded-sm hover:border-[var(--brand-gold)] transition-colors"
-                >
-                  <InstagramIcon className="w-3.5 h-3.5" />
-                  <span>متابعة على Instagram &larr;</span>
-                </a>
+              <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
+                {storeSettings?.instagramUrl && (
+                  <a
+                    href={storeSettings.instagramUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 h-9 px-5 border border-[var(--border)] text-xs font-medium rounded-sm hover:border-[var(--brand-gold)] transition-colors"
+                  >
+                    <InstagramIcon className="w-3.5 h-3.5" />
+                    <span>متابعة على Instagram &larr;</span>
+                  </a>
+                )}
+                {storeSettings?.tiktokUrl && (
+                  <a
+                    href={storeSettings.tiktokUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 h-9 px-5 border border-[var(--border)] text-xs font-medium rounded-sm hover:border-[var(--brand-gold)] transition-colors"
+                  >
+                    <TikTokIcon className="w-3.5 h-3.5" />
+                    <span>متابعة على TikTok &larr;</span>
+                  </a>
+                )}
               </div>
             </div>
           </section>

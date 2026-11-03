@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { CartDrawer } from "@/components/store/CartDrawer";
 import { InstagramIcon } from "@/components/ui/InstagramIcon";
+import { TikTokIcon } from "@/components/ui/TikTokIcon";
 import { Search, Menu, X } from "lucide-react";
 
 interface CategoryLink {
@@ -16,6 +17,7 @@ interface NavbarProps {
   categories?: CategoryLink[];
   storeName?: string;
   instagramUrl?: string | null;
+  tiktokUrl?: string | null;
   shippingSettings?: {
     freeShippingEnabled: boolean;
     freeShippingMinAmount: number | null;
@@ -28,6 +30,7 @@ export function Navbar({
   categories = [],
   storeName = "Seen Hijabi",
   instagramUrl = "https://www.instagram.com/seen.hijabi/",
+  tiktokUrl = "https://www.tiktok.com/@seen.hijabi",
   shippingSettings,
 }: NavbarProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -147,7 +150,7 @@ export function Navbar({
             )}
           </div>
 
-          {/* Instagram link */}
+          {/* Social Links */}
           {instagramUrl && (
             <a
               href={instagramUrl}
@@ -155,8 +158,21 @@ export function Navbar({
               rel="noopener noreferrer"
               className="hidden sm:inline-flex p-1.5 text-[var(--foreground)] hover:text-[var(--brand-gold)] transition-colors"
               aria-label="Instagram"
+              title="Instagram"
             >
               <InstagramIcon className="w-4 h-4" />
+            </a>
+          )}
+          {tiktokUrl && (
+            <a
+              href={tiktokUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden sm:inline-flex p-1.5 text-[var(--foreground)] hover:text-[var(--brand-gold)] transition-colors"
+              aria-label="TikTok"
+              title="TikTok"
+            >
+              <TikTokIcon className="w-4 h-4" />
             </a>
           )}
 
@@ -225,17 +241,31 @@ export function Navbar({
             >
               لوحة الإدارة | Admin Portal
             </Link>
-            {instagramUrl && (
-              <a
-                href={instagramUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[var(--muted-foreground)] hover:text-[var(--foreground)] flex items-center gap-1"
-              >
-                <InstagramIcon className="w-3.5 h-3.5" />
-                <span>Instagram</span>
-              </a>
-            )}
+            <div className="flex items-center gap-3">
+              {instagramUrl && (
+                <a
+                  href={instagramUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[var(--muted-foreground)] hover:text-[var(--foreground)] flex items-center gap-1"
+                >
+                  <InstagramIcon className="w-3.5 h-3.5" />
+                  <span>Instagram</span>
+                </a>
+              )}
+              {tiktokUrl && (
+                <a
+                  href={tiktokUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[var(--muted-foreground)] hover:text-[var(--foreground)] flex items-center gap-1"
+                >
+                  <TikTokIcon className="w-3.5 h-3.5" />
+                  <span>TikTok</span>
+                </a>
+              )}
+            </div>
+            
           </div>
         </div>
       )}

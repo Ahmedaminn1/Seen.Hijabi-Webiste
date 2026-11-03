@@ -163,6 +163,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
         categories={categories.map((c) => ({ name: c.name, slug: c.slug }))}
         storeName={storeSettings?.storeName || "Seen Hijabi"}
         instagramUrl={storeSettings?.instagramUrl}
+        tiktokUrl={storeSettings?.tiktokUrl}
         shippingSettings={shippingData}
       />
 

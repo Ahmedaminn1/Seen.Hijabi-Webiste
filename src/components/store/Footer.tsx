@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { InstagramIcon } from "@/components/ui/InstagramIcon";
+import { TikTokIcon } from "@/components/ui/TikTokIcon";
 import { Phone, ShieldCheck, Truck, RefreshCw } from "lucide-react";
 
 interface FooterProps {
@@ -76,17 +77,32 @@ export function Footer({
           <p className="text-[11px] text-[var(--muted-foreground)] leading-relaxed">
             علامة أزياء مصرية متخصصة في تقديم أرقى الفساتين، العبايات، والحجابات العصرية بطابع أنثوي محتشم وراقي.
           </p>
-          {instagramUrl && (
-            <div className="flex items-center gap-3 pt-2">
-              <a
-                href={instagramUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-1.5 text-[var(--muted-foreground)] hover:text-[var(--foreground)] border border-[var(--border)] rounded-sm transition-colors"
-                aria-label="Instagram"
-              >
-                <InstagramIcon className="w-4 h-4" />
-              </a>
+          {(instagramUrl || tiktokUrl) && (
+            <div className="flex items-center gap-2 pt-2">
+              {instagramUrl && (
+                <a
+                  href={instagramUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-1.5 text-[var(--muted-foreground)] hover:text-[var(--foreground)] border border-[var(--border)] rounded-sm transition-colors"
+                  aria-label="Instagram"
+                  title="إنستجرام"
+                >
+                  <InstagramIcon className="w-4 h-4" />
+                </a>
+              )}
+              {tiktokUrl && (
+                <a
+                  href={tiktokUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-1.5 text-[var(--muted-foreground)] hover:text-[var(--foreground)] border border-[var(--border)] rounded-sm transition-colors"
+                  aria-label="TikTok"
+                  title="تيك توك"
+                >
+                  <TikTokIcon className="w-4 h-4" />
+                </a>
+              )}
             </div>
           )}
         </div>
